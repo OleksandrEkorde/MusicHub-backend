@@ -2,6 +2,8 @@ import db from '../db/drizzle.js'
 import { desc } from 'drizzle-orm'
 import { users } from '../db/schema.js'
 
+
+
 export default class StatsController {
   static async usersList(req, res) {
     try {
@@ -20,7 +22,8 @@ export default class StatsController {
       return res.json(list)
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Помилка сервера' })
+      return res.status(500).json({ message: 'Server error' })
     }
   }
+  
 }

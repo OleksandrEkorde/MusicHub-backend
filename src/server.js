@@ -1,6 +1,12 @@
 import express from "express";
 import { checkDbConnection } from "./db/db.js";
 import StatsController from "./controllers/StatsController.js";
+import NotesPaginationController from './controllers/NotesPaginationController.js';
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./swagger.js";
+
+
+
 import cors from "cors";
 
 const app = express();
@@ -10,19 +16,24 @@ app.use(
     origin: "http://localhost:5173",
   }),
 );
-app.get("/stats/users", StatsController.usersList);
 const PORT = process.env.SRV_PORT;
+app.get("/stats/users", StatsController.usersList);
+app.get('/songs', NotesPaginationController.NoteList);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+
+
 
 async function start() {
   try {
     await checkDbConnection();
-    console.log("Успішне підключення PostgreSQL");
+    console.log("Sucsess connect to PostgreSQL");
 
     app.listen(PORT, () => {
-      console.log(`Сервер запущено на порту ${PORT}`);
+      console.log(`Server at started port ${PORT}`);
     });
   } catch (err) {
-    console.error("Помилка при старті серверу", err);
+    console.error("Error for start server", err);
     process.exit(1);
   }
 }
