@@ -21,6 +21,45 @@ const parseIds = (value) => {
     .filter(Number.isFinite);
 };
 
+const parseArrayParam = (value) => {
+  if (value == null) return [];
+  if (Array.isArray(value)) return value.flatMap(parseArrayParam);
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return parseArrayParam(parsed);
+      } catch {
+        return [];
+      }
+    }
+
+    return trimmed
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean);
+  }
+
+  return [String(value)];
+};
+
+const splitToIdsAndNames = (values) => {
+  const ids = [];
+  const names = [];
+
+  for (const v of values) {
+    const asNum = Number.parseInt(String(v), 10);
+    if (Number.isFinite(asNum) && String(asNum) === String(v)) ids.push(asNum);
+    else names.push(String(v));
+  }
+
+  return { ids, names };
+};
+
 export default class NotesPaginationController {
   static async NoteList(req, res) {
     try {
