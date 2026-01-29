@@ -28,12 +28,15 @@ export const musicalNotes = pgTable('notes', {
   id: integer('id').primaryKey(),
   userId: integer('user_id'),
   title: varchar('title', { length: 255 }),
-  content: text('content'),
-  size: text('size'),
-  timeSignatureId: integer('time_signature_id'), 
+  pdfUrl: text('pdf_url'),
+  audioUrl: text('audio_url'),
+  coverImageUrl: text('cover_image_url'),
+  description: text('description'),
+  difficulty: varchar('difficulty', { length: 20 }),
   isPublic: boolean('is_public'),
   createdAt: timestamp('created_at', { mode: 'date' }),
-  updatedAt: timestamp('updated_at', { mode: 'date' }),
+  timeSignatureId: integer('time_signature_id'),
+  views: integer('views').default(0),
 })
 
 export const notes = musicalNotes
