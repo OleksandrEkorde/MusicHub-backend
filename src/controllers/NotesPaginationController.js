@@ -53,10 +53,11 @@ export default class NotesPaginationController {
       const limit = Math.min(toPositiveInt(req.query.limit, 10), 50)
       const offset = (page - 1) * limit
 
-      const rawTags = parseArrayParam(req.query.tags)
-      const rawTimeSignatures = parseArrayParam(req.query.time_signature ?? req.query.timeSignatures)
+      const rawTags = parseArrayParam(req.query.tags ?? req.query.tagsIds)
+      const rawTimeSignatures = parseArrayParam(req.query.time_signature ?? req.query.timeSignatures ?? req.query.timeSignaturesIds)
       const rawSizes = parseArrayParam(req.query.sizes ?? req.query.size)
       const query = typeof req.query.query === 'string' ? req.query.query.trim() : ''
+
 
       const { ids: tagIds, names: tagNames } = splitToIdsAndNames(rawTags)
       const { ids: tsIds, names: tsNames } = splitToIdsAndNames(rawTimeSignatures)
@@ -81,7 +82,7 @@ export default class NotesPaginationController {
 
       const hasSizesFilter = rawSizes.length > 0
       if (hasSizesFilter) {
-        const sizeConds = rawSizes.map(s => sql`${musicalNotes.size} ILIKE ${s}`)
+        const sizeConds = rawSizes.map(s => sql`${timeSignatures.name} ILIKE ${s}`)
         whereConditions.push(sizeConds.length === 1 ? sizeConds[0] : sql`(${sql.join(sizeConds, sql` OR `)})`)
       }
 
@@ -152,8 +153,15 @@ export default class NotesPaginationController {
         .select({
           noteId: musicalNotes.id,
           title: musicalNotes.title,
-          content: musicalNotes.content,
-          paperSize: musicalNotes.size,
+          userId: musicalNotes.userId,
+          pdfUrl: musicalNotes.pdfUrl,
+          audioUrl: musicalNotes.audioUrl,
+          coverImageUrl: musicalNotes.coverImageUrl,
+          description: musicalNotes.description,
+          difficulty: musicalNotes.difficulty,
+          isPublic: musicalNotes.isPublic,
+          createdAt: musicalNotes.createdAt,
+          views: musicalNotes.views,
 
           sizeId: timeSignatures.id,
           sizeName: timeSignatures.name,
@@ -170,6 +178,8 @@ export default class NotesPaginationController {
         .leftJoin(noteTags, eq(noteTags.noteId, musicalNotes.id))
         .leftJoin(tags, eq(tags.id, noteTags.tagId))
         .where(inArray(musicalNotes.id, noteIds))
+        .orderBy(musicalNotes.id)
+
 
       const notesById = new Map()
 
@@ -180,8 +190,15 @@ export default class NotesPaginationController {
           note = {
             id: r.noteId,
             title: r.title,
-            content: r.content,
-            paperSize: r.paperSize,
+            userId: r.userId,
+            pdfUrl: r.pdfUrl,
+            audioUrl: r.audioUrl,
+            coverImageUrl: r.coverImageUrl,
+            description: r.description,
+            difficulty: r.difficulty,
+            isPublic: r.isPublic,
+            createdAt: r.createdAt,
+            views: r.views,
             size: r.sizeId ? { id: r.sizeId, name: r.sizeName } : null,
             authorName: r.authorName,
             authorEmail: r.authorEmail,
@@ -228,11 +245,15 @@ export default class NotesPaginationController {
         .select({
           noteId: musicalNotes.id,
           title: musicalNotes.title,
-          content: musicalNotes.content,
-          paperSize: musicalNotes.size,
+          userId: musicalNotes.userId,
+          pdfUrl: musicalNotes.pdfUrl,
+          audioUrl: musicalNotes.audioUrl,
+          coverImageUrl: musicalNotes.coverImageUrl,
+          description: musicalNotes.description,
+          difficulty: musicalNotes.difficulty,
           isPublic: musicalNotes.isPublic,
           createdAt: musicalNotes.createdAt,
-          updatedAt: musicalNotes.updatedAt,
+          views: musicalNotes.views,
 
           timeSignatureId: timeSignatures.id,
           timeSignatureName: timeSignatures.name,
@@ -260,11 +281,15 @@ export default class NotesPaginationController {
       const note = {
         id: first.noteId,
         title: first.title,
-        content: first.content,
-        paperSize: first.paperSize,
+        userId: first.userId,
+        pdfUrl: first.pdfUrl,
+        audioUrl: first.audioUrl,
+        coverImageUrl: first.coverImageUrl,
+        description: first.description,
+        difficulty: first.difficulty,
         isPublic: first.isPublic,
         createdAt: first.createdAt,
-        updatedAt: first.updatedAt,
+        views: first.views,
         size: first.timeSignatureId
           ? { id: first.timeSignatureId, name: first.timeSignatureName }
           : null,
