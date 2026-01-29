@@ -2,6 +2,7 @@ import express from "express";
 import { checkDbConnection } from "./db/db.js";
 import StatsController from "./controllers/StatsController.js";
 import NotesPaginationController from './controllers/NotesPaginationController.js';
+import TimeSignaturesController from './controllers/TimeSignaturesController.js';
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
 
@@ -19,6 +20,8 @@ app.use(
 const PORT = process.env.SRV_PORT;
 app.get("/stats/users", StatsController.usersList);
 app.get('/songs', NotesPaginationController.NoteList);
+app.get('/songs/:id', NotesPaginationController.NoteById);
+app.get('/time-signatures', TimeSignaturesController.list);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
