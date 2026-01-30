@@ -3,6 +3,7 @@ import { checkDbConnection } from "./db/db.js";
 import StatsController from "./controllers/StatsController.js";
 import NotesPaginationController from './controllers/NotesPaginationController.js';
 import TimeSignaturesController from './controllers/TimeSignaturesController.js';
+import TagsController from './controllers/TagsController.js';
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
 
@@ -22,6 +23,7 @@ app.get("/stats/users", StatsController.usersList);
 app.get('/songs', NotesPaginationController.NoteList);
 app.get('/songs/:id', NotesPaginationController.NoteById);
 app.get('/time-signatures', TimeSignaturesController.list);
+app.get('/tags', TagsController.list);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 

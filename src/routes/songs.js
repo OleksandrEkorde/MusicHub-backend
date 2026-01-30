@@ -2,23 +2,141 @@
  * @swagger
  * /songs:
  *   get:
- *     summary: Get songs list
+ *     summary: Get paginated list of musical notes with filtering options
  *     parameters:
- *       - in: query
- *         name: tags
- *         schema:
- *           type: array
- *           items: { type: string }
- *         style: form
- *         explode: true
  *       - in: query
  *         name: page
  *         schema: { type: integer, default: 1 }
+ *         description: The page number for pagination.
  *       - in: query
  *         name: limit
- *         schema: { type: integer, default: 10 }
+ *         schema: { type: integer, default: 10, maximum: 50 }
+ *         description: The number of items per page (max 50).
+ *       - in: query
+ *         name: tagsIds
+ *         schema: { type: string, example: "1,2,3" }
+ *         description: Comma-separated list of tag IDs to filter by (OR logic).
+ *       - in: query
+ *         name: timeSignaturesIds
+ *         schema: { type: string, example: "4,5" }
+ *         description: Comma-separated list of time signature IDs to filter by (OR logic).
  *     responses:
  *       200:
- *         description: OK
+ *         description: A paginated list of musical notes.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     totalItems: { type: integer }
+ *                     totalPages: { type: integer }
+ *                     currentPage: { type: integer }
+ *                     limit: { type: integer }
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: "Error" }
  */
-router.get("/songs", controller);
+
+/**
+ * @swagger
+ * /time-signatures:
+ *   get:
+ *     summary: Get paginated list of time signatures
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *         description: The page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 10, maximum: 50 }
+ *         description: The number of items per page (max 50).
+ *     responses:
+ *       200:
+ *         description: A paginated list of time signatures.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: integer }
+ *                       name: { type: string }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     totalItems: { type: integer }
+ *                     totalPages: { type: integer }
+ *                     currentPage: { type: integer }
+ *                     limit: { type: integer }
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: "Error" }
+ */
+
+/**
+ * @swagger
+ * /tags:
+ *   get:
+ *     summary: Get paginated list of tags
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *         description: The page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 10, maximum: 50 }
+ *         description: The number of items per page (max 50).
+ *     responses:
+ *       200:
+ *         description: A paginated list of tags.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: integer }
+ *                       name: { type: string }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     totalItems: { type: integer }
+ *                     totalPages: { type: integer }
+ *                     currentPage: { type: integer }
+ *                     limit: { type: integer }
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: "Error" }
+ */
