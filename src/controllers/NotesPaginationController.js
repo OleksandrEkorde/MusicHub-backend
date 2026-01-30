@@ -81,7 +81,7 @@ export default class NotesPaginationController {
 
       const hasSizesFilter = rawSizes.length > 0
       if (hasSizesFilter) {
-        const sizeConds = rawSizes.map(s => sql`${musicalNotes.size} ILIKE ${s}`)
+        const sizeConds = rawSizes.map(s => sql`${timeSignatures.name} ILIKE ${s}`)
         whereConditions.push(sizeConds.length === 1 ? sizeConds[0] : sql`(${sql.join(sizeConds, sql` OR `)})`)
       }
 
@@ -152,8 +152,6 @@ export default class NotesPaginationController {
         .select({
           noteId: musicalNotes.id,
           title: musicalNotes.title,
-          content: musicalNotes.content,
-          paperSize: musicalNotes.size,
 
           sizeId: timeSignatures.id,
           sizeName: timeSignatures.name,
@@ -180,8 +178,6 @@ export default class NotesPaginationController {
           note = {
             id: r.noteId,
             title: r.title,
-            content: r.content,
-            paperSize: r.paperSize,
             size: r.sizeId ? { id: r.sizeId, name: r.sizeName } : null,
             authorName: r.authorName,
             authorEmail: r.authorEmail,
@@ -228,11 +224,8 @@ export default class NotesPaginationController {
         .select({
           noteId: musicalNotes.id,
           title: musicalNotes.title,
-          content: musicalNotes.content,
-          paperSize: musicalNotes.size,
           isPublic: musicalNotes.isPublic,
           createdAt: musicalNotes.createdAt,
-          updatedAt: musicalNotes.updatedAt,
 
           timeSignatureId: timeSignatures.id,
           timeSignatureName: timeSignatures.name,
@@ -260,11 +253,8 @@ export default class NotesPaginationController {
       const note = {
         id: first.noteId,
         title: first.title,
-        content: first.content,
-        paperSize: first.paperSize,
         isPublic: first.isPublic,
         createdAt: first.createdAt,
-        updatedAt: first.updatedAt,
         size: first.timeSignatureId
           ? { id: first.timeSignatureId, name: first.timeSignatureName }
           : null,

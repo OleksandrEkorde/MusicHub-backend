@@ -28,12 +28,9 @@ export const musicalNotes = pgTable('notes', {
   id: integer('id').primaryKey(),
   userId: integer('user_id'),
   title: varchar('title', { length: 255 }),
-  content: text('content'),
-  size: text('size'),
   timeSignatureId: integer('time_signature_id'), 
   isPublic: boolean('is_public'),
   createdAt: timestamp('created_at', { mode: 'date' }),
-  updatedAt: timestamp('updated_at', { mode: 'date' }),
 })
 
 export const notes = musicalNotes
