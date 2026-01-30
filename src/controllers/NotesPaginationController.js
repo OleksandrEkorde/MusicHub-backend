@@ -46,6 +46,11 @@ const splitToIdsAndNames = values => {
   return { ids, names }
 }
 
+const toLikePattern = value => {
+  const v = String(value)
+  return v.includes('%') ? v : `%${v}%`
+}
+
 export default class NotesPaginationController {
   static async NoteList(req, res) {
     try {
@@ -53,13 +58,16 @@ export default class NotesPaginationController {
       const limit = Math.min(toPositiveInt(req.query.limit, 10), 50)
       const offset = (page - 1) * limit
 
-      const rawTags = parseArrayParam(req.query.tags)
-      const rawTimeSignatures = parseArrayParam(req.query.time_signature ?? req.query.timeSignatures)
+      const rawTags = parseArrayParam(req.query.tags ?? req.query.tagsIds)
+      const rawTimeSignatures = parseArrayParam(
+        req.query.time_signature ?? req.query.timeSignatures ?? req.query.timeSignaturesIds,
+      )
       const rawSizes = parseArrayParam(req.query.sizes ?? req.query.size)
       const query = typeof req.query.query === 'string' ? req.query.query.trim() : ''
 
       const { ids: tagIds, names: tagNames } = splitToIdsAndNames(rawTags)
       const { ids: tsIds, names: tsNames } = splitToIdsAndNames(rawTimeSignatures)
+      const { ids: sizeIds, names: sizeNames } = splitToIdsAndNames(rawSizes)
 
       const whereConditions = []
 
@@ -72,17 +80,23 @@ export default class NotesPaginationController {
         const conds = []
         if (tsIds.length > 0) conds.push(inArray(musicalNotes.timeSignatureId, tsIds))
         if (tsNames.length > 0) {
-          const nameConds = tsNames.map(n => sql`${timeSignatures.name} ILIKE ${n}`)
+          const nameConds = tsNames.map(n => sql`${timeSignatures.name} ILIKE ${toLikePattern(n)}`)
           conds.push(nameConds.length === 1 ? nameConds[0] : sql`(${sql.join(nameConds, sql` OR `)})`)
         }
 
         whereConditions.push(conds.length === 1 ? conds[0] : sql`(${sql.join(conds, sql` OR `)})`)
       }
 
-      const hasSizesFilter = rawSizes.length > 0
+      const hasSizesFilter = sizeIds.length > 0 || sizeNames.length > 0
       if (hasSizesFilter) {
-        const sizeConds = rawSizes.map(s => sql`${timeSignatures.name} ILIKE ${s}`)
-        whereConditions.push(sizeConds.length === 1 ? sizeConds[0] : sql`(${sql.join(sizeConds, sql` OR `)})`)
+        const conds = []
+        if (sizeIds.length > 0) conds.push(inArray(musicalNotes.timeSignatureId, sizeIds))
+        if (sizeNames.length > 0) {
+          const nameConds = sizeNames.map(s => sql`${timeSignatures.name} ILIKE ${toLikePattern(s)}`)
+          conds.push(nameConds.length === 1 ? nameConds[0] : sql`(${sql.join(nameConds, sql` OR `)})`)
+        }
+
+        whereConditions.push(conds.length === 1 ? conds[0] : sql`(${sql.join(conds, sql` OR `)})`)
       }
 
       const hasTagsFilter = tagIds.length > 0 || tagNames.length > 0
@@ -90,7 +104,7 @@ export default class NotesPaginationController {
         const conds = []
         if (tagIds.length > 0) conds.push(inArray(noteTags.tagId, tagIds))
         if (tagNames.length > 0) {
-          const nameConds = tagNames.map(n => sql`${tags.name} ILIKE ${n}`)
+          const nameConds = tagNames.map(n => sql`${tags.name} ILIKE ${toLikePattern(n)}`)
           conds.push(nameConds.length === 1 ? nameConds[0] : sql`(${sql.join(nameConds, sql` OR `)})`)
         }
 

@@ -20,6 +20,14 @@
  *         name: timeSignaturesIds
  *         schema: { type: string, example: "4,5" }
  *         description: Comma-separated list of time signature IDs to filter by (OR logic).
+ *       - in: query
+ *         name: sizes
+ *         schema: { type: string, example: "4/4,3/4" }
+ *         description: Comma-separated list of time signature names to filter by (OR logic). Also supports numeric IDs.
+ *       - in: query
+ *         name: query
+ *         schema: { type: string, example: "nocturne" }
+ *         description: Search by note title (case-insensitive, substring match).
  *     responses:
  *       200:
  *         description: A paginated list of musical notes.
