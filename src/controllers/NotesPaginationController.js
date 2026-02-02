@@ -169,7 +169,9 @@ export default class NotesPaginationController {
           sizeId: timeSignatures.id,
           sizeName: timeSignatures.name,
 
-          authorName: users.firstName,
+          authorId: users.id,
+          authorFirstName: users.firstName,
+          authorLastName: users.lastName,
           authorEmail: users.email,
 
           tagId: tags.id,
@@ -201,8 +203,14 @@ export default class NotesPaginationController {
             createdAt: r.createdAt ?? null,
             views: r.views ?? 0,
             size: r.sizeId ? { id: r.sizeId, name: r.sizeName } : null,
-            authorName: r.authorName,
-            authorEmail: r.authorEmail,
+            author: r.authorId
+              ? {
+                  id: r.authorId,
+                  firstName: r.authorFirstName,
+                  lastName: r.authorLastName,
+                  email: r.authorEmail,
+                }
+              : null,
             tags: [],
           }
 

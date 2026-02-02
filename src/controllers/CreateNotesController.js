@@ -78,8 +78,14 @@ const buildNoteResponse = (first, tagsList) => ({
   createdAt: first.createdAt ?? null,
   views: first.views ?? 0,
   size: first.sizeId ? { id: first.sizeId, name: first.sizeName } : null,
-  authorName: first.authorName ?? null,
-  authorEmail: first.authorEmail ?? null,
+  author: first.authorId
+    ? {
+        id: first.authorId,
+        firstName: first.authorFirstName,
+        lastName: first.authorLastName,
+        email: first.authorEmail,
+      }
+    : null,
   tags: tagsList,
 })
 
@@ -175,7 +181,9 @@ export default class CreateNotesController {
           views: musicalNotes.views,
           sizeId: timeSignatures.id,
           sizeName: timeSignatures.name,
-          authorName: users.firstName,
+          authorId: users.id,
+          authorFirstName: users.firstName,
+          authorLastName: users.lastName,
           authorEmail: users.email,
           tagId: tags.id,
           tagName: tags.name,
