@@ -1,8 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary'
-import { eq, inArray, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import multer from 'multer'
 import db from '../db/drizzle.js'
-import pool from '../db/db.js'
 import { musicalNotes, noteTags, tags, timeSignatures, users } from '../db/schema.js'
 
 const upload = multer({ storage: multer.memoryStorage() })
@@ -25,6 +24,12 @@ const parseIds = value => {
     .split(',')
     .map(x => Number.parseInt(x.trim(), 10))
     .filter(n => Number.isFinite(n) && n > 0)
+}
+
+const toOptionalString = value => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed ? trimmed : null
 }
 
 const ensureCloudinary = () => {
@@ -51,26 +56,32 @@ const uploadBuffer = (buffer, options) =>
     stream.end(buffer)
   })
 
-let notesColumnsCache = null
-const getNotesColumns = async () => {
-  if (notesColumnsCache) return notesColumnsCache
-  const res = await pool.query(
-    `SELECT column_name
-     FROM information_schema.columns
-     WHERE table_schema='public' AND table_name='notes'`,
-  )
-  notesColumnsCache = new Set(res.rows.map(r => r.column_name))
-  return notesColumnsCache
+const getFirstFile = (files, field) => files?.[field]?.[0] ?? null
+
+const uploadAsset = async (file, options) => {
+  if (!file?.buffer) return null
+  return uploadBuffer(file.buffer, options)
 }
 
-const pick = (obj, cols) => {
-  const out = {}
-  for (const [k, v] of Object.entries(obj)) {
-    if (v === undefined) continue
-    if (cols.has(k)) out[k] = v
-  }
-  return out
-}
+const uniqIds = values => Array.from(new Set(values))
+
+const buildNoteResponse = (first, tagsList) => ({
+  id: first.noteId,
+  title: first.title,
+  userId: first.userId ?? null,
+  pdfUrl: first.pdfUrl ?? null,
+  audioUrl: first.audioUrl ?? null,
+  coverImageUrl: first.coverImageUrl ?? null,
+  description: first.description ?? null,
+  difficulty: first.difficulty ?? null,
+  isPublic: first.isPublic ?? false,
+  createdAt: first.createdAt ?? null,
+  views: first.views ?? 0,
+  size: first.sizeId ? { id: first.sizeId, name: first.sizeName } : null,
+  authorName: first.authorName ?? null,
+  authorEmail: first.authorEmail ?? null,
+  tags: tagsList,
+})
 
 export default class CreateNotesController {
   static uploadMiddleware = upload.fields([
@@ -90,74 +101,61 @@ export default class CreateNotesController {
       const timeSignatureId = toPositiveInt(req.body.timeSignatureId, null)
       const isPublic = toBool(req.body.isPublic)
       const tagsIds = parseIds(req.body.tagsIds)
+      const description = toOptionalString(req.body.description)
+      const difficulty = toOptionalString(req.body.difficulty)
 
       const files = req.files || {}
-      const pdfFile = files.pdf?.[0]
-      const audioFile = files.audio?.[0]
-      const coverFile = files.cover?.[0]
+      const pdfFile = getFirstFile(files, 'pdf')
+      const audioFile = getFirstFile(files, 'audio')
+      const coverFile = getFirstFile(files, 'cover')
 
       const uploads = {}
 
-      if (pdfFile?.buffer) {
-        const r = await uploadBuffer(pdfFile.buffer, {
+      const pdfUpload = await uploadAsset(pdfFile, {
           resource_type: 'raw',
           folder: 'musichub/notes/pdf',
-        })
-        uploads.pdf_url = r.secure_url
-        uploads.pdf_public_id = r.public_id
+      })
+      if (pdfUpload) {
+        uploads.pdfUrl = pdfUpload.secure_url
+        uploads.pdfPublicId = pdfUpload.public_id
       }
 
-      if (audioFile?.buffer) {
-        const r = await uploadBuffer(audioFile.buffer, {
+      const audioUpload = await uploadAsset(audioFile, {
           resource_type: 'video',
           folder: 'musichub/notes/audio',
-        })
-        uploads.audio_url = r.secure_url
-        uploads.audio_public_id = r.public_id
+      })
+      if (audioUpload) {
+        uploads.audioUrl = audioUpload.secure_url
+        uploads.audioPublicId = audioUpload.public_id
       }
 
-      if (coverFile?.buffer) {
-        const r = await uploadBuffer(coverFile.buffer, {
+      const coverUpload = await uploadAsset(coverFile, {
           resource_type: 'image',
           folder: 'musichub/notes/cover',
-        })
-        uploads.cover_image_url = r.secure_url
-        uploads.cover_image_public_id = r.public_id
+      })
+      if (coverUpload) {
+        uploads.coverImageUrl = coverUpload.secure_url
+        uploads.coverImagePublicId = coverUpload.public_id
       }
 
-      const cols = await getNotesColumns()
-
-      const insertPayload = pick(
-        {
+      const inserted = await db
+        .insert(musicalNotes)
+        .values({
           title,
-          user_id: userId,
-          time_signature_id: timeSignatureId,
-          is_public: isPublic,
+          userId,
+          timeSignatureId,
+          isPublic,
+          description,
+          difficulty,
           ...uploads,
-        },
-        cols,
-      )
+        })
+        .returning({ id: musicalNotes.id })
 
-      const insertKeys = Object.keys(insertPayload)
-      if (insertKeys.length === 0) {
-        return res.status(500).json({ message: 'No insertable columns found for notes' })
-      }
-
-      const placeholders = insertKeys.map((_, i) => `$${i + 1}`).join(', ')
-      const values = insertKeys.map(k => insertPayload[k])
-
-      const inserted = await pool.query(
-        `INSERT INTO notes (${insertKeys.map(k => `"${k}"`).join(', ')})
-         VALUES (${placeholders})
-         RETURNING id`,
-        values,
-      )
-
-      const noteId = inserted.rows?.[0]?.id
+      const noteId = inserted?.[0]?.id
       if (!noteId) return res.status(500).json({ message: 'Failed to create note' })
 
       if (tagsIds.length > 0) {
-        const uniqueTagIds = Array.from(new Set(tagsIds))
+        const uniqueTagIds = uniqIds(tagsIds)
         const rows = uniqueTagIds.map(tagId => ({ noteId, tagId }))
         await db.insert(noteTags).values(rows)
       }
@@ -166,6 +164,15 @@ export default class CreateNotesController {
         .select({
           noteId: musicalNotes.id,
           title: musicalNotes.title,
+          userId: musicalNotes.userId,
+          pdfUrl: musicalNotes.pdfUrl,
+          audioUrl: musicalNotes.audioUrl,
+          coverImageUrl: musicalNotes.coverImageUrl,
+          description: musicalNotes.description,
+          difficulty: musicalNotes.difficulty,
+          isPublic: musicalNotes.isPublic,
+          createdAt: musicalNotes.createdAt,
+          views: musicalNotes.views,
           sizeId: timeSignatures.id,
           sizeName: timeSignatures.name,
           authorName: users.firstName,
@@ -180,25 +187,22 @@ export default class CreateNotesController {
         .leftJoin(tags, eq(tags.id, noteTags.tagId))
         .where(eq(musicalNotes.id, noteId))
 
-      const first = rows[0]
-      const note = {
-        id: first.noteId,
-        title: first.title,
-        size: first.sizeId ? { id: first.sizeId, name: first.sizeName } : null,
-        authorName: first.authorName,
-        authorEmail: first.authorEmail,
-        tags: [],
+      if (rows.length === 0) {
+        return res.status(500).json({ message: 'Failed to load created note' })
       }
 
+      const first = rows[0]
+
+      const tagsList = []
       const seen = new Set()
       for (const r of rows) {
-        if (r.tagId && !seen.has(r.tagId)) {
-          seen.add(r.tagId)
-          note.tags.push({ id: r.tagId, name: r.tagName })
-        }
+        if (!r.tagId) continue
+        if (seen.has(r.tagId)) continue
+        seen.add(r.tagId)
+        tagsList.push({ id: r.tagId, name: r.tagName })
       }
 
-      return res.status(201).json({ data: note })
+      return res.status(201).json({ data: buildNoteResponse(first, tagsList) })
     } catch (err) {
       console.error(err)
       return res.status(500).json({ message: 'Error' })

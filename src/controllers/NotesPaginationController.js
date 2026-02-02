@@ -1,5 +1,5 @@
 import db from '../db/drizzle.js'
-import { and, desc, eq, inArray, sql } from 'drizzle-orm'
+import { and, countDistinct, desc, eq, ilike, inArray, or } from 'drizzle-orm'
 import { users, musicalNotes, tags, noteTags, timeSignatures } from '../db/schema.js'
 
 const toPositiveInt = (value, fallback) => {
@@ -72,54 +72,43 @@ export default class NotesPaginationController {
       const whereConditions = []
 
       if (query) {
-        whereConditions.push(sql`${musicalNotes.title} ILIKE ${`%${query}%`}`)
+        whereConditions.push(ilike(musicalNotes.title, `%${query}%`))
       }
 
       const hasTimeFilter = tsIds.length > 0 || tsNames.length > 0
       if (hasTimeFilter) {
         const conds = []
         if (tsIds.length > 0) conds.push(inArray(musicalNotes.timeSignatureId, tsIds))
-        if (tsNames.length > 0) {
-          const nameConds = tsNames.map(n => sql`${timeSignatures.name} ILIKE ${toLikePattern(n)}`)
-          conds.push(nameConds.length === 1 ? nameConds[0] : sql`(${sql.join(nameConds, sql` OR `)})`)
-        }
+        if (tsNames.length > 0) conds.push(or(...tsNames.map(n => ilike(timeSignatures.name, toLikePattern(n)))))
 
-        whereConditions.push(conds.length === 1 ? conds[0] : sql`(${sql.join(conds, sql` OR `)})`)
+        whereConditions.push(conds.length === 1 ? conds[0] : or(...conds))
       }
 
       const hasSizesFilter = sizeIds.length > 0 || sizeNames.length > 0
       if (hasSizesFilter) {
         const conds = []
         if (sizeIds.length > 0) conds.push(inArray(musicalNotes.timeSignatureId, sizeIds))
-        if (sizeNames.length > 0) {
-          const nameConds = sizeNames.map(s => sql`${timeSignatures.name} ILIKE ${toLikePattern(s)}`)
-          conds.push(nameConds.length === 1 ? nameConds[0] : sql`(${sql.join(nameConds, sql` OR `)})`)
-        }
+        if (sizeNames.length > 0) conds.push(or(...sizeNames.map(s => ilike(timeSignatures.name, toLikePattern(s)))))
 
-        whereConditions.push(conds.length === 1 ? conds[0] : sql`(${sql.join(conds, sql` OR `)})`)
+        whereConditions.push(conds.length === 1 ? conds[0] : or(...conds))
       }
 
       const hasTagsFilter = tagIds.length > 0 || tagNames.length > 0
       if (hasTagsFilter) {
         const conds = []
         if (tagIds.length > 0) conds.push(inArray(noteTags.tagId, tagIds))
-        if (tagNames.length > 0) {
-          const nameConds = tagNames.map(n => sql`${tags.name} ILIKE ${toLikePattern(n)}`)
-          conds.push(nameConds.length === 1 ? nameConds[0] : sql`(${sql.join(nameConds, sql` OR `)})`)
-        }
+        if (tagNames.length > 0) conds.push(or(...tagNames.map(n => ilike(tags.name, toLikePattern(n)))))
 
-        whereConditions.push(conds.length === 1 ? conds[0] : sql`(${sql.join(conds, sql` OR `)})`)
+        whereConditions.push(conds.length === 1 ? conds[0] : or(...conds))
       }
 
-      const matchCountExpr = hasTagsFilter
-        ? sql`COUNT(DISTINCT ${noteTags.tagId})`
-        : sql`0`
+      const matchCountExpr = hasTagsFilter ? countDistinct(noteTags.tagId) : null
 
       const whereExpr = whereConditions.length > 0 ? and(...whereConditions) : undefined
 
       const countRows = await db
         .select({
-          totalItems: sql`COUNT(DISTINCT ${musicalNotes.id})`,
+          totalItems: countDistinct(musicalNotes.id),
         })
         .from(musicalNotes)
         .leftJoin(timeSignatures, eq(timeSignatures.id, musicalNotes.timeSignatureId))
@@ -134,7 +123,7 @@ export default class NotesPaginationController {
         .select({
           noteId: musicalNotes.id,
           createdAt: musicalNotes.createdAt,
-          matchCount: matchCountExpr,
+          matchCount: matchCountExpr ?? 0,
         })
         .from(musicalNotes)
         .leftJoin(timeSignatures, eq(timeSignatures.id, musicalNotes.timeSignatureId))
@@ -143,7 +132,7 @@ export default class NotesPaginationController {
         .where(whereExpr)
         .groupBy(musicalNotes.id, musicalNotes.createdAt)
         .orderBy(
-          ...(hasTagsFilter ? [desc(matchCountExpr)] : []),
+          ...(hasTagsFilter ? [desc(countDistinct(noteTags.tagId))] : []),
           desc(musicalNotes.createdAt),
         )
         .limit(limit)
@@ -166,6 +155,16 @@ export default class NotesPaginationController {
         .select({
           noteId: musicalNotes.id,
           title: musicalNotes.title,
+
+          userId: musicalNotes.userId,
+          pdfUrl: musicalNotes.pdfUrl,
+          audioUrl: musicalNotes.audioUrl,
+          coverImageUrl: musicalNotes.coverImageUrl,
+          description: musicalNotes.description,
+          difficulty: musicalNotes.difficulty,
+          isPublic: musicalNotes.isPublic,
+          createdAt: musicalNotes.createdAt,
+          views: musicalNotes.views,
 
           sizeId: timeSignatures.id,
           sizeName: timeSignatures.name,
@@ -192,6 +191,15 @@ export default class NotesPaginationController {
           note = {
             id: r.noteId,
             title: r.title,
+            userId: r.userId ?? null,
+            pdfUrl: r.pdfUrl ?? null,
+            audioUrl: r.audioUrl ?? null,
+            coverImageUrl: r.coverImageUrl ?? null,
+            description: r.description ?? null,
+            difficulty: r.difficulty ?? null,
+            isPublic: r.isPublic ?? false,
+            createdAt: r.createdAt ?? null,
+            views: r.views ?? 0,
             size: r.sizeId ? { id: r.sizeId, name: r.sizeName } : null,
             authorName: r.authorName,
             authorEmail: r.authorEmail,
@@ -238,8 +246,15 @@ export default class NotesPaginationController {
         .select({
           noteId: musicalNotes.id,
           title: musicalNotes.title,
+          userId: musicalNotes.userId,
+          pdfUrl: musicalNotes.pdfUrl,
+          audioUrl: musicalNotes.audioUrl,
+          coverImageUrl: musicalNotes.coverImageUrl,
+          description: musicalNotes.description,
+          difficulty: musicalNotes.difficulty,
           isPublic: musicalNotes.isPublic,
           createdAt: musicalNotes.createdAt,
+          views: musicalNotes.views,
 
           timeSignatureId: timeSignatures.id,
           timeSignatureName: timeSignatures.name,
@@ -267,8 +282,15 @@ export default class NotesPaginationController {
       const note = {
         id: first.noteId,
         title: first.title,
+        userId: first.userId ?? null,
+        pdfUrl: first.pdfUrl ?? null,
+        audioUrl: first.audioUrl ?? null,
+        coverImageUrl: first.coverImageUrl ?? null,
+        description: first.description ?? null,
+        difficulty: first.difficulty ?? null,
         isPublic: first.isPublic,
         createdAt: first.createdAt,
+        views: first.views ?? 0,
         size: first.timeSignatureId
           ? { id: first.timeSignatureId, name: first.timeSignatureName }
           : null,

@@ -29,8 +29,18 @@ export const musicalNotes = pgTable('notes', {
   userId: integer('user_id'),
   title: varchar('title', { length: 255 }),
   timeSignatureId: integer('time_signature_id'), 
+  pdfUrl: text('pdf_url'),
+  pdfPublicId: text('pdf_public_id'),
+  audioUrl: text('audio_url'),
+  audioPublicId: text('audio_public_id'),
+  coverImageUrl: text('cover_image_url'),
+  coverImagePublicId: text('cover_image_public_id'),
+  description: text('description'),
+  difficulty: varchar('difficulty', { length: 20 }),
   isPublic: boolean('is_public'),
+  views: integer('views').default(0),
   createdAt: timestamp('created_at', { mode: 'date' }),
+  updatedAt: timestamp('updated_at', { mode: 'date' }),
 })
 
 export const notes = musicalNotes

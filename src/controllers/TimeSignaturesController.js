@@ -1,5 +1,5 @@
 import db from '../db/drizzle.js'
-import { asc, sql } from 'drizzle-orm'
+import { asc, count } from 'drizzle-orm'
 import { timeSignatures } from '../db/schema.js'
 
 const toPositiveInt = (value, fallback) => {
@@ -15,7 +15,7 @@ export default class TimeSignaturesController {
       const offset = (page - 1) * limit
 
       const countRows = await db
-        .select({ totalItems: sql`COUNT(*)` })
+        .select({ totalItems: count() })
         .from(timeSignatures)
 
       const totalItems = Number.parseInt(String(countRows?.[0]?.totalItems ?? 0), 10) || 0
