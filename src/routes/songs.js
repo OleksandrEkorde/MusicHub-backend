@@ -59,6 +59,104 @@
 
 /**
  * @swagger
+ * /songs:
+ *   post:
+ *     summary: Create a musical note
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: "Nocturne Op.9 No.2"
+ *               userId:
+ *                 type: integer
+ *                 example: 1
+ *               timeSignatureId:
+ *                 type: integer
+ *                 example: 3
+ *               isPublic:
+ *                 type: boolean
+ *                 example: true
+ *               tagsIds:
+ *                 type: string
+ *                 example: "1,2,3"
+ *               pdf:
+ *                 type: string
+ *                 format: binary
+ *               audio:
+ *                 type: string
+ *                 format: binary
+ *               cover:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Internal Server Error
+ */
+
+/**
+ * @swagger
+ * /songs/{id}:
+ *   delete:
+ *     summary: Delete a musical note
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *         description: Note ID
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               assets:
+ *                 type: array
+ *                 description: Optional list of Cloudinary assets to remove
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     publicId: { type: string, example: "folder/file" }
+ *                     url: { type: string, example: "https://res.cloudinary.com/.../upload/v123/folder/file.pdf" }
+ *                     resourceType: { type: string, example: "image" }
+ *     responses:
+ *       200:
+ *         description: Deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: "Deleted" }
+ *       400:
+ *         description: Invalid id
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
+ */
+
+/**
+ * @swagger
  * /time-signatures:
  *   get:
  *     summary: Get paginated list of time signatures

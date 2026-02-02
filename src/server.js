@@ -4,6 +4,8 @@ import StatsController from "./controllers/StatsController.js";
 import NotesPaginationController from './controllers/NotesPaginationController.js';
 import TimeSignaturesController from './controllers/TimeSignaturesController.js';
 import TagsController from './controllers/TagsController.js';
+import CreateNotesController from './controllers/CreateNotesController.js';
+import DeleteNotesController from './controllers/DeleteNotesController.js';
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
 
@@ -21,7 +23,9 @@ app.use(
 const PORT = process.env.SRV_PORT;
 app.get("/stats/users", StatsController.usersList);
 app.get('/songs', NotesPaginationController.NoteList);
+app.post('/songs', CreateNotesController.uploadMiddleware, CreateNotesController.create);
 app.get('/songs/:id', NotesPaginationController.NoteById);
+app.delete('/songs/:id', DeleteNotesController.delete);
 app.get('/time-signatures', TimeSignaturesController.list);
 app.get('/tags', TagsController.list);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
