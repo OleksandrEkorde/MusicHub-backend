@@ -65,6 +65,33 @@
  *     requestBody:
  *       required: true
  *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: "Nocturne Op.9 No.2"
+ *               userId:
+ *                 type: integer
+ *                 example: 1
+ *               timeSignatureId:
+ *                 type: integer
+ *                 example: 3
+ *               isPublic:
+ *                 type: boolean
+ *                 example: true
+ *               tagsIds:
+ *                 type: string
+ *                 example: "1,2,3"
+ *               description:
+ *                 type: string
+ *                 example: "Some description"
+ *               difficulty:
+ *                 type: string
+ *                 example: "easy"
  *         multipart/form-data:
  *           schema:
  *             type: object
@@ -86,6 +113,12 @@
  *               tagsIds:
  *                 type: string
  *                 example: "1,2,3"
+ *               description:
+ *                 type: string
+ *                 example: "Some description"
+ *               difficulty:
+ *                 type: string
+ *                 example: "easy"
  *               pdf:
  *                 type: string
  *                 format: binary
@@ -131,7 +164,7 @@
  *             properties:
  *               assets:
  *                 type: array
- *                 description: Optional list of Cloudinary assets to remove
+ *                 description: Optional extra list of Cloudinary assets to remove. By default, assets are taken from the note record (public_id/url).
  *                 items:
  *                   type: object
  *                   properties:

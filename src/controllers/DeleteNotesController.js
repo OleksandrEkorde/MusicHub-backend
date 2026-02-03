@@ -90,19 +90,55 @@ export default class DeleteNotesController {
       if (!id) return res.status(400).json({ message: 'Invalid id' })
 
       const noteRows = await db
-        .select({ id: musicalNotes.id })
+        .select({
+          id: musicalNotes.id,
+          pdfPublicId: musicalNotes.pdfPublicId,
+          audioPublicId: musicalNotes.audioPublicId,
+          coverImagePublicId: musicalNotes.coverImagePublicId,
+          pdfUrl: musicalNotes.pdfUrl,
+          audioUrl: musicalNotes.audioUrl,
+          coverImageUrl: musicalNotes.coverImageUrl,
+        })
         .from(musicalNotes)
         .where(eq(musicalNotes.id, id))
         .limit(1)
 
       if (noteRows.length === 0) return res.status(404).json({ message: 'Not found' })
 
+      const note = noteRows[0]
+
+      const assetsFromDb = [
+        note.pdfPublicId || note.pdfUrl
+          ? {
+              publicId: note.pdfPublicId ?? null,
+              url: note.pdfUrl ?? null,
+              resourceType: 'raw',
+            }
+          : null,
+        note.audioPublicId || note.audioUrl
+          ? {
+              publicId: note.audioPublicId ?? null,
+              url: note.audioUrl ?? null,
+              resourceType: 'video',
+            }
+          : null,
+        note.coverImagePublicId || note.coverImageUrl
+          ? {
+              publicId: note.coverImagePublicId ?? null,
+              url: note.coverImageUrl ?? null,
+              resourceType: 'image',
+            }
+          : null,
+      ].filter(Boolean)
+
       await db.transaction(async tx => {
         await tx.delete(noteTags).where(eq(noteTags.noteId, id))
         await tx.delete(noteView).where(eq(noteView.noteId, id))
         await tx.delete(musicalNotes).where(eq(musicalNotes.id, id))
       })
-      await deleteCloudinaryAssets(req.body?.assets)
+
+      const bodyAssets = Array.isArray(req.body?.assets) ? req.body.assets : []
+      await deleteCloudinaryAssets([...assetsFromDb, ...bodyAssets])
 
       return res.json({ message: 'Deleted' })
     } catch (err) {

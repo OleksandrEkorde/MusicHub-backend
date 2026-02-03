@@ -90,11 +90,15 @@ const buildNoteResponse = (first, tagsList) => ({
 })
 
 export default class CreateNotesController {
-  static uploadMiddleware = upload.fields([
-    { name: 'pdf', maxCount: 1 },
-    { name: 'audio', maxCount: 1 },
-    { name: 'cover', maxCount: 1 },
-  ])
+  static uploadMiddleware = (req, res, next) => {
+    if (!req.is('multipart/form-data')) return next()
+
+    return upload.fields([
+      { name: 'pdf', maxCount: 1 },
+      { name: 'audio', maxCount: 1 },
+      { name: 'cover', maxCount: 1 },
+    ])(req, res, next)
+  }
 
   static async create(req, res) {
     try {
@@ -123,6 +127,7 @@ export default class CreateNotesController {
       })
       if (pdfUpload) {
         uploads.pdfUrl = pdfUpload.secure_url
+        uploads.pdfPublicId = pdfUpload.public_id
       }
 
       const audioUpload = await uploadAsset(audioFile, {
@@ -131,6 +136,7 @@ export default class CreateNotesController {
       })
       if (audioUpload) {
         uploads.audioUrl = audioUpload.secure_url
+        uploads.audioPublicId = audioUpload.public_id
       }
 
       const coverUpload = await uploadAsset(coverFile, {
@@ -139,6 +145,7 @@ export default class CreateNotesController {
       })
       if (coverUpload) {
         uploads.coverImageUrl = coverUpload.secure_url
+        uploads.coverImagePublicId = coverUpload.public_id
       }
 
       const inserted = await db
