@@ -37,7 +37,6 @@ export const musicalNotes = pgTable('notes', {
   isPublic: boolean('is_public'),
   views: integer('views').default(0),
   createdAt: timestamp('created_at', { mode: 'date' }),
-  updatedAt: timestamp('updated_at', { mode: 'date' }),
 })
 
 export const notes = musicalNotes
