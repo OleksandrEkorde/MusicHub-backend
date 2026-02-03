@@ -123,7 +123,6 @@ export default class CreateNotesController {
       })
       if (pdfUpload) {
         uploads.pdfUrl = pdfUpload.secure_url
-        uploads.pdfPublicId = pdfUpload.public_id
       }
 
       const audioUpload = await uploadAsset(audioFile, {
@@ -132,7 +131,6 @@ export default class CreateNotesController {
       })
       if (audioUpload) {
         uploads.audioUrl = audioUpload.secure_url
-        uploads.audioPublicId = audioUpload.public_id
       }
 
       const coverUpload = await uploadAsset(coverFile, {
@@ -141,7 +139,6 @@ export default class CreateNotesController {
       })
       if (coverUpload) {
         uploads.coverImageUrl = coverUpload.secure_url
-        uploads.coverImagePublicId = coverUpload.public_id
       }
 
       const inserted = await db
