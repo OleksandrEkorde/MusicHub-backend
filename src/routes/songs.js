@@ -59,6 +59,74 @@
 
 /**
  * @swagger
+ * /me:
+ *   get:
+ *     summary: Get current user
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
+ */
+
+/**
+ * @swagger
+ * /my-songs:
+ *   get:
+ *     summary: Get current user's musical notes (paginated)
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *         description: The page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 10, maximum: 50 }
+ *         description: The number of items per page (max 50).
+ *       - in: query
+ *         name: tagsIds
+ *         schema: { type: string, example: "1,2,3" }
+ *         description: Comma-separated list of tag IDs to filter by (OR logic).
+ *       - in: query
+ *         name: timeSignaturesIds
+ *         schema: { type: string, example: "4,5" }
+ *         description: Comma-separated list of time signature IDs to filter by (OR logic).
+ *       - in: query
+ *         name: sizes
+ *         schema: { type: string, example: "4/4,3/4" }
+ *         description: Comma-separated list of time signature names to filter by (OR logic). Also supports numeric IDs.
+ *       - in: query
+ *         name: query
+ *         schema: { type: string, example: "nocturne" }
+ *         description: Search by note title (case-insensitive, substring match).
+ *     responses:
+ *       200:
+ *         description: A paginated list of musical notes.
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ */
+
+/**
+ * @swagger
  * /composers/{composerId}/songs:
  *   get:
  *     summary: Get paginated list of musical notes by composer id
@@ -213,6 +281,58 @@
 /**
  * @swagger
  * /songs/{id}:
+ *   put:
+ *     summary: Update a musical note (only owner)
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *         description: Note ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - description
+ *               - tagsIds
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: "Nocturne Op.9 No.2 (Edited)"
+ *               description:
+ *                 type: string
+ *                 example: "Updated description"
+ *               tagsIds:
+ *                 type: array
+ *                 items: { type: integer }
+ *                 example: [1, 2, 3]
+ *     responses:
+ *       200:
+ *         description: Updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *       400:
+ *         description: Invalid id / validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (not owner)
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  *   delete:
  *     summary: Delete a musical note
  *     parameters:
