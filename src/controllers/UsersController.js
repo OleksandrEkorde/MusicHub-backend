@@ -21,6 +21,7 @@ export default class UsersController {
           role: users.role,
           firstName: users.firstName,
           lastName: users.lastName,
+          bio: users.bio,
           createdAt: users.createdAt,
         })
         .from(users)
@@ -47,6 +48,7 @@ export default class UsersController {
           role: users.role,
           firstName: users.firstName,
           lastName: users.lastName,
+          bio: users.bio,
           createdAt: users.createdAt,
         })
         .from(users)
