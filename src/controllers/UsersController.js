@@ -12,7 +12,7 @@ export default class UsersController {
   static async me(req, res) {
     try {
       const id = req.user?.id
-      if (!id) return res.status(401).json({ message: 'Unauthorized' })
+      if (!id) return res.status(401).json({ status: 'error', message: 'Unauthorized' })
 
       const rows = await db
         .select({
@@ -27,18 +27,18 @@ export default class UsersController {
         .where(eq(users.id, id))
         .limit(1)
 
-      if (rows.length === 0) return res.status(404).json({ message: 'Not found' })
+      if (rows.length === 0) return res.status(404).json({ status: 'error', message: 'Not found' })
       return res.json({ data: rows[0] })
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Error' })
+      return res.status(500).json({ status: 'error', message: 'Error' })
     }
   }
 
   static async getById(req, res) {
     try {
       const id = toPositiveInt(req.params.id, null)
-      if (!id) return res.status(400).json({ message: 'Invalid id' })
+      if (!id) return res.status(400).json({ status: 'error', message: 'Invalid id' })
 
       const rows = await db
         .select({
@@ -53,11 +53,11 @@ export default class UsersController {
         .where(eq(users.id, id))
         .limit(1)
 
-      if (rows.length === 0) return res.status(404).json({ message: 'Not found' })
+      if (rows.length === 0) return res.status(404).json({ status: 'error', message: 'Not found' })
       return res.json({ data: rows[0] })
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Error' })
+      return res.status(500).json({ status: 'error', message: 'Error' })
     }
   }
 }

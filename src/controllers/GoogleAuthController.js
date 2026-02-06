@@ -86,6 +86,18 @@ const signAccessToken = user => {
   )
 }
 
+const setAuthCookie = (res, token) => {
+  const isProd = process.env.NODE_ENV === 'production'
+
+  res.cookie('access_token', token, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/',
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  })
+}
+
 const toRedirectUrl = token => {
   const base = process.env.FRONTEND_URL
   if (!base) return null
@@ -107,22 +119,22 @@ export default class GoogleAuthController {
       return res.redirect(buildGoogleAuthUrl())
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Error' })
+      return res.status(500).json({ status: 'error', message: 'Error' })
     }
   }
 
   static async callback(req, res) {
     try {
       const code = typeof req.query.code === 'string' ? req.query.code : ''
-      if (!code) return res.status(400).json({ message: 'code is required' })
+      if (!code) return res.status(400).json({ status: 'error', message: 'code is required' })
 
       const tokens = await exchangeCodeForTokens(code)
       const accessToken = tokens?.access_token
-      if (!accessToken) return res.status(400).json({ message: 'Invalid token response from Google' })
+      if (!accessToken) return res.status(400).json({ status: 'error', message: 'Invalid token response from Google' })
 
       const info = await fetchGoogleUserInfo(accessToken)
       const email = typeof info?.email === 'string' ? info.email.trim().toLowerCase() : ''
-      if (!email) return res.status(400).json({ message: 'Google account has no email' })
+      if (!email) return res.status(400).json({ status: 'error', message: 'Google account has no email' })
 
       const firstNameRaw = typeof info?.given_name === 'string' ? info.given_name.trim() : ''
       const lastNameRaw = typeof info?.family_name === 'string' ? info.family_name.trim() : ''
@@ -185,16 +197,17 @@ export default class GoogleAuthController {
         }
       }
 
-      if (!user?.id) return res.status(500).json({ message: 'Failed to create user' })
+      if (!user?.id) return res.status(500).json({ status: 'error', message: 'Failed to create user' })
 
       const token = signAccessToken(user)
+      setAuthCookie(res, token)
       const redirectUrl = toRedirectUrl(token)
       if (redirectUrl) return res.redirect(redirectUrl)
 
       return res.json({ token, user })
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Error' })
+      return res.status(500).json({ status: 'error', message: 'Error' })
     }
   }
 }

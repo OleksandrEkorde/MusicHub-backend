@@ -239,14 +239,14 @@ export default class NotesPaginationController {
       })
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Error' })
+      return res.status(500).json({ status: 'error', message: 'Error' })
     }
   }
 
   static async NoteListByComposerId(req, res) {
     try {
       const composerId = toPositiveInt(req.params.composerId, null)
-      if (!composerId) return res.status(400).json({ message: 'Invalid composerId' })
+      if (!composerId) return res.status(400).json({ status: 'error', message: 'Invalid composerId' })
 
       const page = toPositiveInt(req.query.page, 1)
       const limit = Math.min(toPositiveInt(req.query.limit, 10), 50)
@@ -434,7 +434,7 @@ export default class NotesPaginationController {
       })
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Error' })
+      return res.status(500).json({ status: 'error', message: 'Error' })
     }
   }
 
@@ -442,7 +442,7 @@ export default class NotesPaginationController {
     try {
       const id = Number.parseInt(req.params.id, 10)
       if (!Number.isFinite(id) || id <= 0) {
-        return res.status(400).json({ message: 'Invalid id' })
+        return res.status(400).json({ status: 'error', message: 'Invalid id' })
       }
 
       const rows = await db
@@ -478,7 +478,7 @@ export default class NotesPaginationController {
         .where(eq(musicalNotes.id, id))
 
       if (rows.length === 0) {
-        return res.status(404).json({ message: 'Not found' })
+        return res.status(404).json({ status: 'error', message: 'Not found' })
       }
 
       const first = rows[0]
@@ -519,7 +519,7 @@ export default class NotesPaginationController {
       return res.json({ data: note })
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Error' })
+      return res.status(500).json({ status: 'error', message: 'Error' })
     }
   }
 }

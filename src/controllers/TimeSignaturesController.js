@@ -39,7 +39,7 @@ export default class TimeSignaturesController {
       })
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Error' })
+      return res.status(500).json({ status: 'error', message: 'Error' })
     }
   }
 }
