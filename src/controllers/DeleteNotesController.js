@@ -87,7 +87,7 @@ export default class DeleteNotesController {
   static async delete(req, res) {
     try {
       const id = toPositiveInt(req.params.id, null)
-      if (!id) return res.status(400).json({ message: 'Invalid id' })
+      if (!id) return res.status(400).json({ status: 'error', message: 'Invalid id' })
 
       const noteRows = await db
         .select({
@@ -103,7 +103,7 @@ export default class DeleteNotesController {
         .where(eq(musicalNotes.id, id))
         .limit(1)
 
-      if (noteRows.length === 0) return res.status(404).json({ message: 'Not found' })
+      if (noteRows.length === 0) return res.status(404).json({ status: 'error', message: 'Not found' })
 
       const note = noteRows[0]
 
@@ -140,10 +140,10 @@ export default class DeleteNotesController {
       const bodyAssets = Array.isArray(req.body?.assets) ? req.body.assets : []
       await deleteCloudinaryAssets([...assetsFromDb, ...bodyAssets])
 
-      return res.json({ message: 'Deleted' })
+      return res.json({ status: 'success', message: 'Deleted' })
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Error' })
+      return res.status(500).json({ status: 'error', message: 'Error' })
     }
   }
 }

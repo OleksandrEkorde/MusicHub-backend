@@ -6,28 +6,42 @@ import TimeSignaturesController from './controllers/TimeSignaturesController.js'
 import TagsController from './controllers/TagsController.js';
 import CreateNotesController from './controllers/CreateNotesController.js';
 import DeleteNotesController from './controllers/DeleteNotesController.js';
+import GoogleAuthController from './controllers/GoogleAuthController.js';
+import UsersController from './controllers/UsersController.js';
+import UpdateNotesController from './controllers/UpdateNotesController.js';
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
 
 
 
 import cors from "cors";
+import requireAuth from './middleware/requireAuth.js';
+import { buildCorsOptions } from './config/cors.js';
 
 const app = express();
 app.use(express.json());
 app.use(
-  cors({
-    origin: "http://localhost:5173",
-  }),
+  cors(buildCorsOptions()),
 );
 const PORT = process.env.SRV_PORT;
+
 app.get("/stats/users", StatsController.usersList);
 app.get('/songs', NotesPaginationController.NoteList);
+app.get('/composers/:composerId/songs', NotesPaginationController.NoteListByComposerId);
 app.post('/songs', CreateNotesController.uploadMiddleware, CreateNotesController.create);
 app.get('/songs/:id', NotesPaginationController.NoteById);
+app.put('/songs/:id', requireAuth, UpdateNotesController.update);
 app.delete('/songs/:id', DeleteNotesController.delete);
 app.get('/time-signatures', TimeSignaturesController.list);
 app.get('/tags', TagsController.list);
+app.get('/auth/google', GoogleAuthController.redirect);
+app.get('/auth/google/callback', GoogleAuthController.callback);
+app.get('/me', requireAuth, UsersController.me);
+app.get('/my-songs', requireAuth, (req, res) => {
+  req.params.composerId = String(req.user.id)
+  return NotesPaginationController.NoteListByComposerId(req, res)
+});
+app.get('/users/:id', UsersController.getById);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 

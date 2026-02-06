@@ -105,7 +105,7 @@ export default class CreateNotesController {
       ensureCloudinary()
 
       const title = typeof req.body.title === 'string' ? req.body.title.trim() : ''
-      if (!title) return res.status(400).json({ message: 'title is required' })
+      if (!title) return res.status(400).json({ status: 'error', message: 'title is required' })
 
       const userId = toPositiveInt(req.body.userId, null)
       const timeSignatureId = toPositiveInt(req.body.timeSignatureId, null)
@@ -162,7 +162,7 @@ export default class CreateNotesController {
         .returning({ id: musicalNotes.id })
 
       const noteId = inserted?.[0]?.id
-      if (!noteId) return res.status(500).json({ message: 'Failed to create note' })
+      if (!noteId) return res.status(500).json({ status: 'error', message: 'Failed to create note' })
 
       if (tagsIds.length > 0) {
         const uniqueTagIds = uniqIds(tagsIds)
@@ -200,7 +200,7 @@ export default class CreateNotesController {
         .where(eq(musicalNotes.id, noteId))
 
       if (rows.length === 0) {
-        return res.status(500).json({ message: 'Failed to load created note' })
+        return res.status(500).json({ status: 'error', message: 'Failed to load created note' })
       }
 
       const first = rows[0]
@@ -217,7 +217,7 @@ export default class CreateNotesController {
       return res.status(201).json({ data: buildNoteResponse(first, tagsList) })
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Error' })
+      return res.status(500).json({ status: 'error', message: 'Error' })
     }
   }
 }

@@ -22,6 +22,7 @@ export const users = pgTable('users', {
   role: userRole('role'),
   firstName: varchar('first_name', { length: 255 }),
   lastName: varchar('last_name', { length: 255 }),
+  bio: text('bio'),
 })
 
 export const musicalNotes = pgTable('notes', {
