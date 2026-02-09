@@ -85,6 +85,114 @@
 
 /**
  * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Register user with email and password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "test@test.com"
+ *               password:
+ *                 type: string
+ *                 example: "123456"
+ *               firstName:
+ *                 type: string
+ *                 example: "Test"
+ *               lastName:
+ *                 type: string
+ *                 example: "User"
+ *     responses:
+ *       201:
+ *         description: Created
+ *         headers:
+ *           Set-Cookie:
+ *             description: HttpOnly cookie with access token (access_token)
+ *             schema: { type: string }
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token: { type: string }
+ *                 user: { type: object }
+ *       400:
+ *         description: Validation error
+ *       409:
+ *         description: User already exists
+ *       500:
+ *         description: Internal Server Error
+ */
+
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Login user with email and password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "test@test.com"
+ *               password:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: OK
+ *         headers:
+ *           Set-Cookie:
+ *             description: HttpOnly cookie with access token (access_token)
+ *             schema: { type: string }
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token: { type: string }
+ *                 user: { type: object }
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Invalid credentials
+ *       500:
+ *         description: Internal Server Error
+ */
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout user (clears access_token cookie)
+ *     responses:
+ *       200:
+ *         description: OK
+ *         headers:
+ *           Set-Cookie:
+ *             description: Clears HttpOnly cookie access_token
+ *             schema: { type: string }
+ *       500:
+ *         description: Internal Server Error
+ */
+
+/**
+ * @swagger
  * /my-songs:
  *   get:
  *     summary: Get current user's musical notes (paginated)
@@ -280,7 +388,37 @@
 
 /**
  * @swagger
- * /songs/{id}:
+ * /songs/{id}/view:
+ *   post:
+ *     summary: Track note view (first view increments views)
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *         description: Note ID
+ *     responses:
+ *       200:
+ *         description: Viewed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: "success" }
+ *                 viewed: { type: boolean, example: true }
+ *                 incremented: { type: boolean, example: true }
+ *       400:
+ *         description: Invalid id
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  *   put:
  *     summary: Update a musical note (only owner)
  *     security:

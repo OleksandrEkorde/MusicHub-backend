@@ -89,13 +89,16 @@ const signAccessToken = user => {
 const setAuthCookie = (res, token) => {
   const isProd = process.env.NODE_ENV === 'production'
 
-  res.cookie('access_token', token, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    path: '/',
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  })
+  const parts = [
+    `access_token=${encodeURIComponent(token)}`,
+    'HttpOnly',
+    'Path=/',
+    `Max-Age=${60 * 60 * 24 * 7}`,
+    `SameSite=${isProd ? 'None' : 'Lax'}`,
+  ]
+
+  if (isProd) parts.push('Secure')
+  res.setHeader('Set-Cookie', parts.join('; '))
 }
 
 const toRedirectUrl = token => {
