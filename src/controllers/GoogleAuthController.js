@@ -104,9 +104,7 @@ const setAuthCookie = (res, token) => {
 const toRedirectUrl = token => {
   const base = process.env.FRONTEND_URL
   if (!base) return null
-  const u = new URL(base)
-  u.searchParams.set('token', token)
-  return u.toString()
+  return base
 }
 
 const randomPassword = () => {
