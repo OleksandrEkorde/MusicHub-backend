@@ -3,6 +3,7 @@ import db from "../db/db.js";
 import { noteLikes, notes, users } from "../db/schema.js";
 import { eq, and, desc } from "drizzle-orm";
 
+
 class LikesController {
     async toggle(req, res) {
         try {
