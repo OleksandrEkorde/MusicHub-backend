@@ -7,7 +7,7 @@ class LikesController {
     async toggle(req, res) {
         try {
             const { id } = req.params;
-            const userId = req.user.id; // Assumes requireAuth middleware
+            const userId = req.user.id;
 
             const existingLike = await db
                 .select()
@@ -41,10 +41,6 @@ class LikesController {
             const { page = 1, limit = 10 } = req.query;
             const offset = (page - 1) * limit;
 
-            // Fetch liked notes with pagination
-            // Drizzle doesn't have a simple join-and-map for this in one go returning note structure directly easily without defining relation, 
-            // but we can join.
-
             const favorites = await db
                 .select({
                     id: notes.id,
@@ -62,7 +58,6 @@ class LikesController {
                 .limit(Number(limit))
                 .offset(Number(offset));
 
-            // Get total count for metadata
             const allFavorites = await db
                 .select({ id: noteLikes.id })
                 .from(noteLikes)
