@@ -3,6 +3,7 @@ const { defineConfig } = require('drizzle-kit');
 
 module.exports = defineConfig({
   dialect: 'postgresql',
+  schema: './src/db/schema.js',
   out: './drizzle',
   dbCredentials: {
     host: process.env.DB_HOST,

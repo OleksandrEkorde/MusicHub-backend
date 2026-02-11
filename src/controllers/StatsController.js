@@ -15,6 +15,7 @@ export default class StatsController {
           createdAt: users.createdAt,
           firstName: users.firstName,
           lastName: users.lastName,
+          avatar: users.avatar,
         })
         .from(users)
         .orderBy(desc(users.createdAt))

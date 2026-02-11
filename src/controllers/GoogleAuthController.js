@@ -149,6 +149,7 @@ export default class GoogleAuthController {
           role: users.role,
           firstName: users.firstName,
           lastName: users.lastName,
+          avatar: users.avatar,
         })
         .from(users)
         .where(eq(users.email, email))
@@ -173,6 +174,7 @@ export default class GoogleAuthController {
             role: users.role,
             firstName: users.firstName,
             lastName: users.lastName,
+            avatar: users.avatar,
           })
 
         user = inserted?.[0] ?? null
@@ -192,6 +194,7 @@ export default class GoogleAuthController {
               role: users.role,
               firstName: users.firstName,
               lastName: users.lastName,
+              avatar: users.avatar,
             })
 
           user = updated?.[0] ?? user

@@ -84,6 +84,7 @@ const buildNoteResponse = (first, tagsList) => ({
         firstName: first.authorFirstName,
         lastName: first.authorLastName,
         email: first.authorEmail,
+        avatar: first.authorAvatar,
       }
     : null,
   tags: tagsList,
@@ -189,6 +190,7 @@ export default class CreateNotesController {
           authorFirstName: users.firstName,
           authorLastName: users.lastName,
           authorEmail: users.email,
+          authorAvatar: users.avatar,
           tagId: tags.id,
           tagName: tags.name,
         })

@@ -63,6 +63,7 @@ const loadNoteById = async id => {
       authorFirstName: users.firstName,
       authorLastName: users.lastName,
       authorEmail: users.email,
+      authorAvatar: users.avatar,
 
       tagId: tags.id,
       tagName: tags.name,
@@ -96,6 +97,7 @@ const loadNoteById = async id => {
           firstName: first.authorFirstName,
           lastName: first.authorLastName,
           email: first.authorEmail,
+          avatar: first.authorAvatar,
         }
       : null,
     tags: [],

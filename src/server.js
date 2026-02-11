@@ -11,6 +11,9 @@ import AuthController from './controllers/AuthController.js';
 import UsersController from './controllers/UsersController.js';
 import UpdateNotesController from './controllers/UpdateNotesController.js';
 import NoteViewController from './controllers/NoteViewController.js';
+import SubscriptionController from './controllers/SubscriptionController.js';
+import LikesController from './controllers/LikesController.js';
+import DownloadController from './controllers/DownloadController.js';
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
 
@@ -32,7 +35,9 @@ app.get('/songs', NotesPaginationController.NoteList);
 app.get('/composers/:composerId/songs', NotesPaginationController.NoteListByComposerId);
 app.post('/songs', CreateNotesController.uploadMiddleware, CreateNotesController.create);
 app.get('/songs/:id', NotesPaginationController.NoteById);
+app.get('/songs/:id/download', DownloadController.downloadPdf);
 app.post('/songs/:id/view', requireAuth, NoteViewController.view);
+app.post('/songs/:id/like', requireAuth, LikesController.toggle);
 app.put('/songs/:id', requireAuth, UpdateNotesController.update);
 app.delete('/songs/:id', DeleteNotesController.delete);
 app.get('/time-signatures', TimeSignaturesController.list);
@@ -42,7 +47,10 @@ app.get('/auth/google/callback', GoogleAuthController.callback);
 app.post('/auth/register', AuthController.register);
 app.post('/auth/login', AuthController.login);
 app.post('/auth/logout', AuthController.logout);
+app.post('/subscriptions/purchase', requireAuth, SubscriptionController.purchase);
 app.get('/me', requireAuth, UsersController.me);
+app.put('/me', requireAuth, UsersController.uploadAvatarMiddleware, UsersController.updateMe);
+app.get('/my-favorite-songs', requireAuth, LikesController.listFavorites);
 app.get('/my-songs', requireAuth, (req, res) => {
   req.params.composerId = String(req.user.id)
   return NotesPaginationController.NoteListByComposerId(req, res)

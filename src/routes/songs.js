@@ -85,6 +85,51 @@
 
 /**
  * @swagger
+ * /me:
+ *   put:
+ *     summary: Update current user profile
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: "John"
+ *               lastName:
+ *                 type: string
+ *                 example: "Doe"
+ *               bio:
+ *                 type: string
+ *                 example: "Pianist and composer"
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Updated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
+ */
+
+/**
+ * @swagger
  * /auth/register:
  *   post:
  *     summary: Register user with email and password
@@ -187,6 +232,30 @@
  *           Set-Cookie:
  *             description: Clears HttpOnly cookie access_token
  *             schema: { type: string }
+ *       500:
+ *         description: Internal Server Error
+ */
+
+/**
+ * @swagger
+ * /subscriptions/purchase:
+ *   post:
+ *     summary: Purchase subscription (stub)
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Subscription purchased
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: "success" }
+ *                 message: { type: string, example: "Subscription purchased" }
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Internal Server Error
  */

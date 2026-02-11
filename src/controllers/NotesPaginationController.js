@@ -173,6 +173,7 @@ export default class NotesPaginationController {
           authorFirstName: users.firstName,
           authorLastName: users.lastName,
           authorEmail: users.email,
+          authorAvatar: users.avatar,
 
           tagId: tags.id,
           tagName: tags.name,
@@ -209,6 +210,7 @@ export default class NotesPaginationController {
                   firstName: r.authorFirstName,
                   lastName: r.authorLastName,
                   email: r.authorEmail,
+                  avatar: r.authorAvatar,
                 }
               : null,
             tags: [],
@@ -367,6 +369,7 @@ export default class NotesPaginationController {
           authorFirstName: users.firstName,
           authorLastName: users.lastName,
           authorEmail: users.email,
+          authorAvatar: users.avatar,
 
           tagId: tags.id,
           tagName: tags.name,
@@ -403,6 +406,7 @@ export default class NotesPaginationController {
                   firstName: r.authorFirstName,
                   lastName: r.authorLastName,
                   email: r.authorEmail,
+                  avatar: r.authorAvatar,
                 }
               : null,
             tags: [],
@@ -466,6 +470,7 @@ export default class NotesPaginationController {
           authorFirstName: users.firstName,
           authorLastName: users.lastName,
           authorEmail: users.email,
+          authorAvatar: users.avatar,
 
           tagId: tags.id,
           tagName: tags.name,
@@ -503,6 +508,7 @@ export default class NotesPaginationController {
               firstName: first.authorFirstName,
               lastName: first.authorLastName,
               email: first.authorEmail,
+              avatar: first.authorAvatar,
             }
           : null,
         tags: [],

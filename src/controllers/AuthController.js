@@ -103,6 +103,7 @@ export default class AuthController {
           firstName: users.firstName,
           lastName: users.lastName,
           bio: users.bio,
+          avatar: users.avatar,
           createdAt: users.createdAt,
         })
 
@@ -135,6 +136,7 @@ export default class AuthController {
           firstName: users.firstName,
           lastName: users.lastName,
           bio: users.bio,
+          avatar: users.avatar,
           createdAt: users.createdAt,
         })
         .from(users)
@@ -156,6 +158,7 @@ export default class AuthController {
         firstName: u.firstName,
         lastName: u.lastName,
         bio: u.bio,
+        avatar: u.avatar,
         createdAt: u.createdAt,
       }
 
