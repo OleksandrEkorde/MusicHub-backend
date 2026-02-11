@@ -15,6 +15,7 @@ export default class StatsController {
           createdAt: users.createdAt,
           firstName: users.firstName,
           lastName: users.lastName,
+          avatar: users.avatar,
         })
         .from(users)
         .orderBy(desc(users.createdAt))
@@ -22,7 +23,7 @@ export default class StatsController {
       return res.json(list)
     } catch (err) {
       console.error(err)
-      return res.status(500).json({ message: 'Server error' })
+      return res.status(500).json({ status: 'error', message: 'Server error' })
     }
   }
   

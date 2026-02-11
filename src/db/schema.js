@@ -22,6 +22,9 @@ export const users = pgTable('users', {
   role: userRole('role'),
   firstName: varchar('first_name', { length: 255 }),
   lastName: varchar('last_name', { length: 255 }),
+  bio: text('bio'),
+  avatar: text('avatar_url'),
+  avatarPublicId: text('avatar_public_id'),
 })
 
 export const musicalNotes = pgTable('notes', {
@@ -59,6 +62,13 @@ export const tags = pgTable('tags', {
 export const noteTags = pgTable('note_tags', {
   noteId: integer('note_id').notNull(),
   tagId: integer('tag_id').notNull(),
+})
+
+export const noteLikes = pgTable('note_likes', {
+  id: integer('id').primaryKey(),
+  userId: integer('user_id'),
+  noteId: integer('note_id'),
+  createdAt: timestamp('created_at', { mode: 'date' }),
 })
 
 export const timeSignatures = pgTable('time_signatures', {
