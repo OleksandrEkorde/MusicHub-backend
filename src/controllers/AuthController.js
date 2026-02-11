@@ -71,8 +71,8 @@ export default class AuthController {
       const lastName = typeof req.body?.lastName === 'string' ? req.body.lastName.trim() : ''
 
       if (!email) return res.status(400).json({ status: 'error', message: 'email is required' })
-      if (!password || password.length < 6) {
-        return res.status(400).json({ status: 'error', message: 'password must be at least 6 characters' })
+      if (!password || password.length < 8) {
+        return res.status(400).json({ status: 'error', message: 'password must be at least 8 characters' })
       }
 
       const existing = await db
