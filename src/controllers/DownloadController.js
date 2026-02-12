@@ -19,7 +19,7 @@ class DownloadController {
                 return res.status(404).json({ message: "PDF not found for this note" });
             }
 
-            // return res.redirect(note.pdfUrl);
+
             return res.json({
                 status: "success",
                 downloadUrl: note.pdfUrl,
