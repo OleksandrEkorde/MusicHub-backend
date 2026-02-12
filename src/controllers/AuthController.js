@@ -185,7 +185,7 @@ export default class AuthController {
   static async getProfile(req, res) {
     try {
       const userId = req.user.id;
-
+      console.log(userId);
       const user = await db
         .select({
           id: users.id,

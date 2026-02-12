@@ -36,7 +36,6 @@ export default class NoteViewController {
         if (existing.length > 0) {
           return { status: 200, body: { status: 'success', viewed: true, incremented: false } }
         }
-
         await tx.insert(noteView).values({ noteId, userId, createdAt: new Date() })
         await tx
           .update(musicalNotes)
