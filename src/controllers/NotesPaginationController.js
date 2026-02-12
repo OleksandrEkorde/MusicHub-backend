@@ -206,12 +206,12 @@ export default class NotesPaginationController {
             size: r.sizeId ? { id: r.sizeId, name: r.sizeName } : null,
             author: r.authorId
               ? {
-                  id: r.authorId,
-                  firstName: r.authorFirstName,
-                  lastName: r.authorLastName,
-                  email: r.authorEmail,
-                  avatar: r.authorAvatar,
-                }
+                id: r.authorId,
+                firstName: r.authorFirstName,
+                lastName: r.authorLastName,
+                email: r.authorEmail,
+                avatar: r.authorAvatar,
+              }
               : null,
             tags: [],
           }
@@ -402,12 +402,12 @@ export default class NotesPaginationController {
             size: r.sizeId ? { id: r.sizeId, name: r.sizeName } : null,
             author: r.authorId
               ? {
-                  id: r.authorId,
-                  firstName: r.authorFirstName,
-                  lastName: r.authorLastName,
-                  email: r.authorEmail,
-                  avatar: r.authorAvatar,
-                }
+                id: r.authorId,
+                firstName: r.authorFirstName,
+                lastName: r.authorLastName,
+                email: r.authorEmail,
+                avatar: r.authorAvatar,
+              }
               : null,
             tags: [],
           }
@@ -449,6 +449,34 @@ export default class NotesPaginationController {
         return res.status(400).json({ status: 'error', message: 'Invalid id' })
       }
 
+      let userId = null
+      try {
+        const authHeader = req.headers.authorization
+        let token = null
+
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          token = authHeader.substring(7, authHeader.length)
+        } else if (req.headers.cookie) {
+          const cookies = req.headers.cookie.split(';').reduce((acc, cookie) => {
+            const [name, value] = cookie.trim().split('=')
+            acc[name] = value
+            return acc
+          }, {})
+          if (cookies.access_token) {
+            token = cookies.access_token
+          }
+        }
+
+        if (token && process.env.JWT_SECRET) {
+          const importJwt = await import('jsonwebtoken')
+          const jwt = importJwt.default
+          const payload = jwt.verify(token, process.env.JWT_SECRET)
+          userId = payload.id
+        }
+      } catch (err) {
+        // Ignore invalid tokens, just treat as guest
+      }
+
       const rows = await db
         .select({
           noteId: musicalNotes.id,
@@ -486,6 +514,20 @@ export default class NotesPaginationController {
         return res.status(404).json({ status: 'error', message: 'Not found' })
       }
 
+      let isFavourite = false
+      if (userId) {
+        const { noteLikes } = await import('../db/schema.js')
+        const like = await db
+          .select()
+          .from(noteLikes)
+          .where(and(eq(noteLikes.noteId, id), eq(noteLikes.userId, userId)))
+          .limit(1)
+
+        if (like.length > 0) {
+          isFavourite = true
+        }
+      }
+
       const first = rows[0]
       const note = {
         id: first.noteId,
@@ -499,17 +541,18 @@ export default class NotesPaginationController {
         isPublic: first.isPublic,
         createdAt: first.createdAt,
         views: first.views ?? 0,
+        favourite: isFavourite,
         size: first.timeSignatureId
           ? { id: first.timeSignatureId, name: first.timeSignatureName }
           : null,
         author: first.authorId
           ? {
-              id: first.authorId,
-              firstName: first.authorFirstName,
-              lastName: first.authorLastName,
-              email: first.authorEmail,
-              avatar: first.authorAvatar,
-            }
+            id: first.authorId,
+            firstName: first.authorFirstName,
+            lastName: first.authorLastName,
+            email: first.authorEmail,
+            avatar: first.authorAvatar,
+          }
           : null,
         tags: [],
       }

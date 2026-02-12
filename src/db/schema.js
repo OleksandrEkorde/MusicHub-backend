@@ -6,12 +6,22 @@ import {
   boolean,
   timestamp,
   customType,
+  json,
 } from 'drizzle-orm/pg-core'
 
 const userRole = customType({
   dataType() {
     return 'user_role'
   },
+})
+
+export const subscriptions = pgTable('subscriptions', {
+  id: integer('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  price: integer('price').notNull(),
+  currency: varchar('currency', { length: 10 }).default('UAH'),
+  features: json('features'),
+  description: text('description'),
 })
 
 export const users = pgTable('users', {
@@ -31,7 +41,7 @@ export const musicalNotes = pgTable('notes', {
   id: integer('id').primaryKey(),
   userId: integer('user_id'),
   title: varchar('title', { length: 255 }),
-  timeSignatureId: integer('time_signature_id'), 
+  timeSignatureId: integer('time_signature_id'),
   pdfUrl: text('pdf_url'),
   pdfPublicId: text('pdf_public_id'),
   audioUrl: text('audio_url'),

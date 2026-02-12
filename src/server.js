@@ -47,6 +47,8 @@ app.get('/auth/google/callback', GoogleAuthController.callback);
 app.post('/auth/register', AuthController.register);
 app.post('/auth/login', AuthController.login);
 app.post('/auth/logout', AuthController.logout);
+app.get('/subscriptions', SubscriptionController.getAll);
+app.get('/subscriptions/:id', SubscriptionController.getById);
 app.post('/subscriptions/purchase', requireAuth, SubscriptionController.purchase);
 app.get('/me', requireAuth, UsersController.me);
 app.put('/me', requireAuth, UsersController.uploadAvatarMiddleware, UsersController.updateMe);
