@@ -7,6 +7,7 @@ import {
   timestamp,
   customType,
   json,
+  serial,
 } from 'drizzle-orm/pg-core'
 
 const userRole = customType({
@@ -16,7 +17,7 @@ const userRole = customType({
 })
 
 export const subscriptions = pgTable('subscriptions', {
-  id: integer('id').primaryKey(),
+  id: serial('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   price: integer('price').notNull(),
   currency: varchar('currency', { length: 10 }).default('UAH'),
@@ -75,7 +76,7 @@ export const noteTags = pgTable('note_tags', {
 })
 
 export const noteLikes = pgTable('note_likes', {
-  id: integer('id').primaryKey(),
+  id: serial('id').primaryKey(),
   userId: integer('user_id'),
   noteId: integer('note_id'),
   createdAt: timestamp('created_at', { mode: 'date' }),

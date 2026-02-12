@@ -1,4 +1,3 @@
-
 import db from "../db/drizzle.js";
 import { notes } from "../db/schema.js";
 import { eq } from "drizzle-orm";
@@ -20,8 +19,11 @@ class DownloadController {
                 return res.status(404).json({ message: "PDF not found for this note" });
             }
 
-            return res.redirect(note.pdfUrl);
-
+            // return res.redirect(note.pdfUrl);
+            return res.json({
+                status: "success",
+                downloadUrl: note.pdfUrl,
+            });
         } catch (error) {
             console.error("Error downloading PDF:", error);
             return res.status(500).json({ message: "Internal Server Error" });
