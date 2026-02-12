@@ -71,8 +71,8 @@ export default class AuthController {
       const lastName = typeof req.body?.lastName === 'string' ? req.body.lastName.trim() : ''
 
       if (!email) return res.status(400).json({ status: 'error', message: 'email is required' })
-      if (!password || password.length < 6) {
-        return res.status(400).json({ status: 'error', message: 'password must be at least 6 characters' })
+      if (!password || password.length < 8) {
+        return res.status(400).json({ status: 'error', message: 'password must be at least 8 characters' })
       }
 
       const existing = await db
@@ -82,7 +82,7 @@ export default class AuthController {
         .limit(1)
 
       if (existing.length > 0) {
-        return res.status(409).json({ status: 'error', message: 'User already exists' })
+        return res.status(400).json({ status: 'error', message: 'Invalid credentials' })
       }
 
       const passwordHash = await bcrypt.hash(password, 10)
@@ -178,6 +178,37 @@ export default class AuthController {
     } catch (err) {
       console.error(err)
       return res.status(500).json({ status: 'error', message: 'Error' })
+    }
+  }
+
+
+  static async getProfile(req, res) {
+    try {
+      const userId = req.user.id;
+
+      const user = await db
+        .select({
+          id: users.id,
+          email: users.email,
+          role: users.role,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          bio: users.bio,
+          avatar: users.avatar,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (user.length === 0) {
+        return res.status(404).json({ status: 'error', message: 'User not found' });
+      }
+
+      return res.json({ status: 'success', user: user[0] });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ status: 'error', message: 'Error' });
     }
   }
 }
